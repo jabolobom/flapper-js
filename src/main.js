@@ -9,7 +9,11 @@ const k = kaplay({
 k.setLayers(["bg", "obj", "ui"], "obj")
 
 
-const mainfont = k.loadFont("VCR", "public/fonts/VCR_OSD_MONO_1.001.ttf")
+const mainfont = k.loadFont("VCR", "fonts/VCR_OSD_MONO_1.001.ttf")
+k.loadSound("jump1", "sounds/JUMP1-F.wav") // TODO find a way to use both randomly, dont want to use it if elses
+k.loadSound("jump2", "sounds/JUMP2-G.wav") // but it may be inevitable
+k.loadSound("hit", "sounds/HIT-F#.wav") // not working atm, the other scene overwrites it, maybe a "game over"
+// theme to play after hitting something
 
 k.scene("game_over", ({ score }) => {
 
@@ -72,6 +76,7 @@ k.scene("main", () => {
     // jumping
     k.onKeyPress(["space", "z"], () => { 
         started = true;
+        k.play("jump1")
         vertical_speed = -450;
     })
 

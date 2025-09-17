@@ -1,33 +1,67 @@
 import kaplay from "kaplay";
 
 const k = kaplay({
-    width: window.screen.width * 0.75,
-    height: window.screen.height * 0.75,
+    width: window.screen.width * 0.5,
+    height: window.screen.height * 0.5,
     canvas: document.getElementById("canvas"), 
 });
 
+k.setLayers(["bg", "obj", "ui"], "obj")
+
+
 const mainfont = k.loadFont("VCR", "public/fonts/VCR_OSD_MONO_1.001.ttf")
+
+k.scene("game_over", ({ score }) => {
+
+        const middleX = k.width() / 2;
+        const middleY = k.height() / 2;
+
+        k.add([
+        k.text(`Game Over`, { size: 64, font: mainfont,}),
+        k.color(255,0,0),
+        pos(middleX, middleY-64),
+        k.anchor("center"), // that is useful
+        k.layer("ui"), 
+        ])
+
+        k.add([
+        k.text(`Final Score: ${score}`, { size: 32, font: mainfont,}),
+        pos(middleX, middleY),
+        k.anchor("center"), // that is useful
+        k.layer("ui"), 
+        ])
+
+        k.add([
+        k.text(`Press SPACE to start again.`, { size: 32, font: mainfont,}),
+        pos(middleX, middleY+64),
+        k.anchor("center"), // that is useful
+        k.layer("ui"), 
+        ])
+
+        k.onKeyPress(["space", "z"], () =>{
+            k.go("main")
+        })
+})
 
 k.scene("main", () => {
 
-    k.setLayers(["bg", "obj", "ui"], "obj")
     k.setBackground(50, 200, 235)
-        
+    
     // config
     let vertical_speed = 0;
-    let gravity = 0.1;
-    let middleX = k.width() / 2;
-    let middleY = k.height() / 2;
+    const gravity = 1200;
+    const middleX = k.width() / 2;
+    const middleY = k.height() / 2;
     let paused = false;
     let started = false;
-    let restart = false;
+    let restart = false; // TODO
     let score = 0;
 
-    const pipeGap = 190;
+    const pipeGap = 140;
 
     // player and pipes
     const bird = k.add([
-        k.rect(64,64),
+        k.rect(32,32),
         k.pos(middleX, middleY),
         k.area(),
         k.color(255, 255, 0),
@@ -38,7 +72,7 @@ k.scene("main", () => {
     // jumping
     k.onKeyPress(["space", "z"], () => { 
         started = true;
-        vertical_speed = -4;
+        vertical_speed = -450;
     })
 
     const scoreCounter = k.add([
@@ -75,30 +109,8 @@ k.scene("main", () => {
     // refering them all together through the tag "pipe" works fine
     };
 
-    function gameOver(score){
-        scoreCounter.opacity = 0;
-
-        k.add([
-        k.text(`Game Over`, { size: 64, font: mainfont,}),
-        k.color(255,0,0),
-        pos(middleX, middleY-64),
-        k.anchor("center"), // that is useful
-        k.layer("ui"), 
-        ])
-
-        k.add([
-        k.text(`Final Score: ${score}`, { size: 32, font: mainfont,}),
-        pos(middleX, middleY),
-        k.anchor("center"), // that is useful
-        k.layer("ui"), 
-        ])
-
-        k.add([
-        k.text(`Press SPACE to start again.`, { size: 32, font: mainfont,}),
-        pos(middleX, middleY+64),
-        k.anchor("center"), // that is useful
-        k.layer("ui"), 
-        ])
+    function gameOver(lastscore){
+        k.go("game_over", {score: lastscore})
 
         return;
     }
@@ -109,14 +121,14 @@ k.scene("main", () => {
         
         // "gravity"
         if (!paused && started){
-        vertical_speed += gravity;
-        bird.pos.y += vertical_speed;
+        vertical_speed += gravity * k.dt();
+        bird.pos.y += vertical_speed * k.dt();
         }
        
         // bound check
-        if (bird.pos.y > k.height() - 64)
+        if (bird.pos.y > k.height())
         {
-            bird.pos.y = k.height() - 64; 
+            bird.pos.y = k.height(); 
             vertical_speed = 0; 
             paused = true;
             gameOver(score);
@@ -129,14 +141,14 @@ k.scene("main", () => {
     })
 
     // pipe spawning
-    k.loop(1.6, () => { // don't know if the original was like this, but this looks fine
+    k.loop(1.2, () => { // don't know if the original was like this, but this looks fine
         if (!paused && started) { spawnPipe(); }
     })
     
     // pipe movement
     k.onUpdate("pipe" , (pipe) => { // batch referencing all "pipe"s to move left
         if (!paused && started){  
-            pipe.move(-220,0)
+            pipe.move(-220,0 * k.dt())
             if (pipe.pos.x < -64){
                 k.destroy(pipe);
             }
@@ -155,5 +167,7 @@ k.scene("main", () => {
     })
     
 });
+
+
 
 k.go("main");

@@ -1,21 +1,34 @@
 import kaplay from "kaplay";
 
 const k = kaplay({
-    width: window.screen.width * 0.5,
-    height: window.screen.height * 0.5,
+    width: 1000,
+    height: 600,
     canvas: document.getElementById("canvas"), 
 });
 
 k.setLayers(["bg", "obj", "ui"], "obj")
 
 
-const mainfont = k.loadFont("VCR", "fonts/VCR_OSD_MONO_1.001.ttf")
-k.loadSound("jump1", "sounds/JUMP1-F.wav") // TODO find a way to use both randomly, dont want to use it if elses
-k.loadSound("jump2", "sounds/JUMP2-G.wav") // but it may be inevitable
-k.loadSound("hit", "sounds/HIT-F#.wav") // not working atm, the other scene overwrites it, maybe a "game over"
+const mainfont = k.loadFont("VCR", "fonts/VCR_OSD_MONO_1.001.ttf");
+k.loadSound("jump1", "sounds/JUMP1-F.wav"); // TODO find a way to use both randomly, dont want to use it if elses
+k.loadSound("jump2", "sounds/JUMP2-G.wav"); // but it may be inevitable
+k.loadSound("hit", "sounds/HIT-F#.wav"); // not working atm, the other scene overwrites it, maybe a "game over"
 // theme to play after hitting something
+k.loadSprite("player", "sprites/winged_dude_sheet.png", {
+    sliceX: 2, 
+    sliceY: 0,
+    anims: {flap: {from: 0, to: 1, loop: true}}
+});
+k.loadSprite("building", "sprites/building.png")
+k.loadSprite("bg", "sprites/background.png")
 
 k.scene("game_over", ({ score }) => {
+
+        // background
+        k.add([
+            k.sprite("bg"),
+            k.layer("bg"),
+        ])
 
         const middleX = k.width() / 2;
         const middleY = k.height() / 2;
@@ -49,7 +62,11 @@ k.scene("game_over", ({ score }) => {
 
 k.scene("main", () => {
 
-    k.setBackground(50, 200, 235)
+    // background
+    k.add([
+        k.sprite("bg"),
+        k.layer("bg"),
+    ])
     
     // config
     let vertical_speed = 0;
@@ -65,10 +82,9 @@ k.scene("main", () => {
 
     // player and pipes
     const bird = k.add([
-        k.rect(32,32),
+        k.sprite("player", {frame: 1}),
         k.pos(middleX, middleY),
         k.area(),
-        k.color(255, 255, 0),
         k.layer("obj"),
         "player",
     ]);
@@ -78,6 +94,7 @@ k.scene("main", () => {
         started = true;
         k.play("jump1")
         vertical_speed = -450;
+        bird.play("flap")
     })
 
     const scoreCounter = k.add([
@@ -94,20 +111,18 @@ k.scene("main", () => {
     const pipeX = k.width() + 64; // offscreen
 
     k.add([
-        k.rect(64, k.height()),
+        k.sprite("building", {width: 64, height: k.height() }),
         k.pos(pipeX, gapCenter + pipeGap / 2),
         k.area(),
-        k.color(0,0,255),
         "pipe",
         { passed: false },
         k.layer("obj"),
     ]);
 
     k.add([
-        k.rect(64, k.height()),
+        k.sprite("building", {width: 64, height: k.height() }),
         k.pos(pipeX, gapCenter - pipeGap / 2 - k.height()), 
         k.area(),
-        k.color(0,200,0),
         "pipe",
         k.layer("obj"),
     ]); // dont actually need to return anything, there's no reference needed to each individual pipe

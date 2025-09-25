@@ -9,6 +9,8 @@ const k = kaplay({
 k.setLayers(["bg", "obj", "ui"], "obj")
 
 
+// maybe define middleX and middleY for all scenes, insted of inside every single one
+
 const mainfont = k.loadFont("VCR", "fonts/VCR_OSD_MONO_1.001.ttf");
 k.loadSound("jump1", "sounds/JUMP1-F.wav"); // TODO find a way to use both randomly, dont want to use it if elses
 k.loadSound("jump2", "sounds/JUMP2-G.wav"); // but it may be inevitable
@@ -188,6 +190,27 @@ k.scene("main", () => {
     
 });
 
+k.scene("start_menu", () =>{
 
+    // background
+    k.add([
+            k.sprite("bg"),
+            k.layer("bg"),
+    ])
 
-k.go("main");
+    const middleX = k.width() / 2;
+    const middleY = k.height() / 2;
+
+    k.add([
+        k.text(`Press SPACE to start!`, {size: 64, font: mainfont,}),
+        pos(middleX,middleY),
+        anchor("center"),
+        k.layer("ui"),
+    ])
+
+    k.onKeyPress(["space"], () => {
+        k.go("main")
+    })
+})
+
+k.go("start_menu");
